@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
-const { newEvent } = require("../controllers/event.controller");
+const { newEvent, listEvents, getEvent, removeEvent, editEvent } = require("../controllers/event.controller");
 const { verifyToken, requireRole } = require("../middleware/auth.middleware");
 
 const storage = multer.diskStorage({
@@ -15,6 +15,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.get("/", verifyToken, requireRole("organizer"), listEvents);
 router.post("/", verifyToken, requireRole("organizer"), upload.single("flyer"), newEvent);
+router.get("/:id", verifyToken, requireRole("organizer"), getEvent);
+router.delete("/:id", verifyToken, requireRole("organizer"), removeEvent);
+router.put("/:id", verifyToken, requireRole("organizer"), editEvent);
+
 
 module.exports = router;
