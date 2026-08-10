@@ -22,10 +22,10 @@ const newEvent = async (req, res) => {
 const listEvents = async (req, res) => {
   try {
     let events;
-    if (req.user.role === "receptionist") {
-      events = await getAllEvents();
-    } else {
+    if (req.user.role === "organizer") {
       events = await getEventsByOrganizer(req.user.id);
+    } else {
+      events = await getAllEvents();
     }
     res.json({ events });
   } catch (err) {
