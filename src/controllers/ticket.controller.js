@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const { createTicket, getTicketByToken, markTicketUsed } = require("../models/ticket.model");
 const { sendInvitationEmail, sendTicketEmail } = require("../services/mailService");
 const { sendInvitationSM, sendTicketSMS } = require("../services/smsService");
+const db = require("../config/db");
 
 const generateTicket = async (req, res) => {
   const { event_id, recipient_name, recipient_contact, contact_type, event_name, event_date, event_time, event_venue } = req.body;
@@ -62,12 +63,34 @@ const verifyTicket = async (req, res) => {
   try {
     const ticket = await getTicketByToken(req.params.token);
     if (!ticket) return res.status(404).json({ message: "Ticket not found", valid: false });
-    if (ticket.status === "used") return res.status(200).json({ message: "Ticket already used", valid: false, ticket });
+
+    // Check if today is the event date
+    const today = new Date().toISOString().slice(0, 10);
+    const eventDate = new Date(ticket.date).toISOString().slice(0, 10);
+    if (today !== eventDate) {
+      return res.status(400).json({
+        valid: false,
+        message: `This ticket is only valid on ${new Date(ticket.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
+      });
+    }
+
+    if (ticket.status === "used") {
+      return res.status(200).json({
+        valid: false,
+        message: "Ticket already scanned",
+        ticket
+      });
+    }
 
     await markTicketUsed(req.params.token);
 
-    // Also mark attendance as present in invitations if exists
-    res.json({ message: "Ticket verified", valid: true, ticket });
+    // Update attendance in invitations table
+    await db.promise().query(
+      "UPDATE invitations SET attendance = 'present' WHERE recipient_contact = ? AND event_id = ?",
+      [ticket.recipient_contact, ticket.event_id]
+    );
+
+    res.json({ valid: true, message: "Welcome!", ticket });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error", valid: false });
