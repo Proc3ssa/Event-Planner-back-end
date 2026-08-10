@@ -55,5 +55,13 @@ const updateEvent = ({ id, name, type, date, time, venue }) => {
   });
 };
 
-module.exports = { createEvent, getEventsByOrganizer, getEventById, deleteEventById, updateEvent };
+const getAllEvents = () => {
+  return new Promise((resolve, reject) => {
+    db.query("SELECT * FROM events ORDER BY date DESC", (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+};
 
+module.exports = { createEvent, getEventsByOrganizer, getEventById, deleteEventById, updateEvent, getAllEvents };
