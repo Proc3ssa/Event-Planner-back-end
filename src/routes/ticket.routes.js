@@ -5,6 +5,6 @@ const { verifyToken, requireRole } = require("../middleware/auth.middleware");
 
 router.post("/", verifyToken, requireRole("organizer"), generateTicket);
 router.get("/:token", getTicket);
-router.post("/verify/:token", verifyToken, requireRole("receptionist"), verifyTicket);
+router.post("/verify/:token", verifyTicket);
 
 module.exports = router;

@@ -15,11 +15,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.get("/all", verifyToken, listEvents);
 router.get("/", verifyToken, requireRole("organizer"), listEvents);
 router.post("/", verifyToken, requireRole("organizer"), upload.single("flyer"), newEvent);
-router.get("/:id", verifyToken, requireRole("organizer"), getEvent);
+router.get("/:id", verifyToken, getEvent);
 router.delete("/:id", verifyToken, requireRole("organizer"), removeEvent);
 router.put("/:id", verifyToken, requireRole("organizer"), editEvent);
-
 
 module.exports = router;
