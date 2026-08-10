@@ -1,4 +1,4 @@
-const { createEvent, getEventsByOrganizer, getEventById, deleteEventById, updateEvent } = require("../models/event.model");
+const { createEvent, getEventsByOrganizer, getEventById, deleteEventById, updateEvent, getAllEvents } = require("../models/event.model");
 
 
 const newEvent = async (req, res) => {
@@ -21,7 +21,12 @@ const newEvent = async (req, res) => {
 
 const listEvents = async (req, res) => {
   try {
-    const events = await getEventsByOrganizer(req.user.id);
+    let events;
+    if (req.user.role === "receptionist") {
+      events = await getAllEvents();
+    } else {
+      events = await getEventsByOrganizer(req.user.id);
+    }
     res.json({ events });
   } catch (err) {
     console.error(err);
@@ -35,8 +40,8 @@ const getEvent = async (req, res) => {
     const event = await getEventById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Ensure the organizer can only view their own events
-    if (event.organizer_id !== req.user.id) {
+    // Only restrict organizers to their own events
+    if (req.user.role === "organizer" && event.organizer_id !== req.user.id) {
       return res.status(403).json({ message: "Access denied" });
     }
 
