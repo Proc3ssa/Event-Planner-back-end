@@ -53,5 +53,17 @@ const getTicketsByEvent = (event_id) => {
     );
   });
 };
+const checkExistingTicket = (event_id, recipient_contact) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT id FROM tickets WHERE event_id = ? AND recipient_contact = ?",
+      [event_id, recipient_contact],
+      (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0]);
+      }
+    );
+  });
+};
 
-module.exports = { createTicket, getTicketByToken, markTicketUsed, getTicketsByEvent };
+module.exports = { createTicket, getTicketByToken, markTicketUsed, getTicketsByEvent, checkExistingTicket };

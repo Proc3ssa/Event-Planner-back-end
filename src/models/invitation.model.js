@@ -92,7 +92,21 @@ const deleteInvitation = (id) => {
   });
 };
 
+const checkExistingInvitation = (event_id, recipient_contact) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT id FROM invitations WHERE event_id = ? AND recipient_contact = ?",
+      [event_id, recipient_contact],
+      (err, results) => {
+        if (err) return reject(err);
+        resolve(results[0]);
+      }
+    );
+  });
+};
+
 module.exports = {
   createInvitation, getInvitationByToken, updateInvitationStatus,
-  getInvitationsByEvent, updateAttendance, updateTableNumber, deleteInvitation
+  getInvitationsByEvent, updateAttendance, updateTableNumber,
+  deleteInvitation, checkExistingInvitation
 };

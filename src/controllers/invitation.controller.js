@@ -7,6 +7,7 @@ const {
   updateAttendance,
   updateTableNumber,
   deleteInvitation,
+  checkExistingInvitation
 } = require("../models/invitation.model");
 const { createTicket } = require("../models/ticket.model");
 const { sendInvitationEmail, sendTicketEmail } = require("../services/mailService");
@@ -20,6 +21,11 @@ const generateInvitation = async (req, res) => {
   }
 
   try {
+    const existing = await checkExistingInvitation(event_id, recipient_contact);
+    if (existing) {
+      return res.status(409).json({ message: `An invitation has already been sent to ${recipient_contact}` });
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
     await createInvitation({ event_id, token, recipient_name, recipient_contact, contact_type });
     const link = `${process.env.FRONTEND_URL}/invite/${token}`;
